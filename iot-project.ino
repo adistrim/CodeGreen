@@ -1,55 +1,74 @@
-// Include the necessary library
+#include <LiquidCrystal.h>
 #include <ESP8266WiFi.h>
+#include <ThingSpeak.h>
 
-// Define the LED pins
-const int ledPin1 = D1;
-const int ledPin2 = D2;
-const int ledPin3 = D3;
-const int ledPin4 = D4;
-const int ledPin5 = D5;
+const int rs = D0, en = D1, d4 = D2, d5 = D3, d6 = D4, d7 = D5;
+LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
 
-// Define the number of rounds before turning on D5
-const int roundsBeforeD5 = 4;
-int roundCount = 0;
+const int mqPin = A0; // Analog pin for MQ-3 sensor
+
+const char* ssid = "-------";      // Enter your WiFi Name
+const char* password = "------"; // Enter your WiFi Password
+
+const char* thingSpeakApiKey = "------";
+const long thingSpeakChannel = 0000000;
+
+WiFiClient client;
 
 void setup() {
-    // Initialize the LED pins as OUTPUT
-    pinMode(ledPin1, OUTPUT);
-    pinMode(ledPin2, OUTPUT);
-    pinMode(ledPin3, OUTPUT);
-    pinMode(ledPin4, OUTPUT);
-    pinMode(ledPin5, OUTPUT);
+  Serial.begin(9600);
+  WiFi.begin(ssid, password);
+
+  lcd.begin(16, 2);
+  lcd.print("Connecting...");
+  delay(1000);
+  lcd.setCursor(0, 1);
+  lcd.print("Warming Sensor");
+  pinMode(mqPin, INPUT);
+
+  int wifiAttempts = 0;
+  while (WiFi.status() != WL_CONNECTED && wifiAttempts < 20) {
+    delay(500);
+    Serial.print(".");
+    wifiAttempts++;
+  }
+
+  if (WiFi.status() != WL_CONNECTED) {
+    lcd.clear();
+    lcd.print("Wifi Failed!");
+    lcd.setCursor(0, 1);
+    lcd.print("Warming Sensor");
+  } else {
+    lcd.clear();
+    lcd.print("Wifi Connected!");
+    lcd.setCursor(0, 1);
+    lcd.print("Warming Sensor");
+  }
+
+  ThingSpeak.begin(client);  // Initialize ThingSpeak
+  delay(3000);
 }
 
 void loop() {
-    // Check if it's time to turn on D5
-    if (roundCount >= roundsBeforeD5) {
-        // Turn on D5 for 3 seconds
-        digitalWrite(ledPin5, HIGH);
-        digitalWrite(ledPin1, HIGH);
-        digitalWrite(ledPin2, HIGH);
-        delay(3000);  // 3 seconds
-        digitalWrite(ledPin5, LOW);
-        roundCount = 0;  // Reset the round count
-    } else {
-        // Turn on LEDs 1 and 3 while turning off LEDs 2 and 4
-        digitalWrite(ledPin1, HIGH);
-        digitalWrite(ledPin2, LOW);
-        digitalWrite(ledPin3, HIGH);
-        digitalWrite(ledPin4, LOW);
 
-        // Wait for 1 second
-        delay(1000);
+  int sensorValue = analogRead(mqPin);
+  float air_quality = (sensorValue / 1024.0) * 100.0;
 
-        // Turn off LEDs 1 and 3 while turning on LEDs 2 and 4
-        digitalWrite(ledPin1, LOW);
-        digitalWrite(ledPin2, HIGH);
-        digitalWrite(ledPin3, LOW);
-        digitalWrite(ledPin4, HIGH);
+  // Print pollution level on LCD
+  lcd.setCursor(0, 1);
+  lcd.print("   ");
+  lcd.setCursor(0, 1);
+  lcd.print("Pollution-" + String(air_quality) + "%");
 
-        // Wait for 1 second
-        delay(1000);
+  // Upload data to ThingSpeak
+  ThingSpeak.setField(1, air_quality);  // Set the field number and value
+  int status = ThingSpeak.writeFields(thingSpeakChannel, thingSpeakApiKey);
 
-        roundCount++;  // Increment the round count
-    }
+  if (status == 200) {
+    Serial.println("ThingSpeak update successful.");
+  } else {
+    Serial.println("Error updating ThingSpeak. HTTP status code: " + String(status));
+  }
+
+  delay(10000);  // Delay for a longer period before reading and uploading data again
 }
