@@ -3,7 +3,8 @@
 ## Overview
 
 This project focuses on collecting and analyzing pollution data using IoT devices. The system includes a NodeMCU microcontroller, a potentiometer, a 16x2 LCD display, an MQ 125 sensor, jumper wires, and a breadboard. The data collected over two days in **JK Lakshmipat University, Jaipur (India)**, including both weekdays and weekends, is utilized to train a Long Short-Term Memory (LSTM) machine learning model. The trained model is then used to predict pollution levels in the local area based on the latest 50 parameters recorded by the IoT device.
-Components Used
+
+## Components Used
 
 - NodeMCU: The NodeMCU microcontroller is used to interface with sensors, collect data, and communicate with the ThingSpeak cloud service.
 
