@@ -38,11 +38,13 @@ A mobile application built with Flutter is used to visualize and interact with t
 
 2. IoT Device Code: Upload the provided NodeMCU code to the microcontroller. Make sure to configure the Wi-Fi settings and ThingSpeak API keys.
 
-3. Machine Learning: Train the LSTM model using the collected data. The code for training the model is provided in the 'ml_model' directory.
+3. Data Collection: Collect the local pollution level of your region to get most accurate results.
 
-3. Mobile Application: Install the Flutter-based mobile application on your device. Configure the app to connect to the ThingSpeak cloud service.
+4. Machine Learning: Train the LSTM model using the collected data. The code for training the model is provided in the 'iot-ml' directory.
 
-5. Run the System: Power up the IoT device and launch the mobile application. Monitor real-time pollution data and predictions on the mobile app.
+5. Mobile Application: Setup the Flutter env pull the codebase from 'iot-app' directory and configure the app to connect to the ThingSpeak cloud service.
+
+6. Run the System: Power up the IoT device and launch the mobile application. Monitor real-time pollution data and predictions on the mobile app.
 
 ## Additional Notes
 
